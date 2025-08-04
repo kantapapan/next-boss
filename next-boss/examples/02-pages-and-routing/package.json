@@ -1,0 +1,25 @@
+{
+  "name": "02-pages-and-routing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Next.jsのページとルーティング例 - 静的ルートと動的ルートの実装",
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.4.5",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "15.4.5"
+  }
+}
