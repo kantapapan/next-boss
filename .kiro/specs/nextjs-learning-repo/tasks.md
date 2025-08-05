@@ -38,19 +38,19 @@
   - Propsの使用例を実装
   - _Requirements: 1.2, 2.1_
 
-- [ ] 5.2 コンポーネントの説明ドキュメントを作成
+- [x] 5.2 コンポーネントの説明ドキュメントを作成
   - docs/03-components.mdを作成
   - コンポーネントの作成方法とPropsの使い方を説明
   - _Requirements: 3.1, 3.2_
 
 - [ ] 6. Server/Client Components例の作成
-- [ ] 6.1 04-server-client-componentsディレクトリの実装
+- [x] 6.1 04-server-client-componentsディレクトリの実装
   - Server Componentの例を作成
   - Client Componentの例を実装
   - 両者の違いを明確に示すサンプルを作成
   - _Requirements: 1.2, 2.2_
 
-- [ ] 6.2 Server/Client Componentsの説明を作成
+- [x] 6.2 Server/Client Componentsの説明を作成
   - 各コンポーネントファイルに詳細なコメントを追加
   - 使い分けの指針を説明
   - _Requirements: 3.1, 3.2_
