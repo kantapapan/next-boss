@@ -33,7 +33,7 @@
   - _Requirements: 3.1, 3.2_
 
 - [ ] 5. コンポーネント例の作成
-- [ ] 5.1 03-components-and-propsディレクトリの実装
+- [x] 5.1 03-components-and-propsディレクトリの実装
   - 再利用可能なコンポーネント（Header、Footer、Card）を作成
   - Propsの使用例を実装
   - _Requirements: 1.2, 2.1_

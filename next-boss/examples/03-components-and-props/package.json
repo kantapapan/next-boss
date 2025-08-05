@@ -1,0 +1,25 @@
+{
+  "name": "03-components-and-props",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Next.jsのコンポーネントとProps例 - 再利用可能なコンポーネントの作成と使用方法",
+  "scripts": {
+    "dev": "next dev -p 3003",
+    "build": "next build",
+    "start": "next start -p 3003",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.4.5",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "15.4.5"
+  }
+}
