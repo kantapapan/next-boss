@@ -27,7 +27,7 @@
   - 動的ルート（blog/[slug]）を実装
   - _Requirements: 1.2, 2.1_
 
-- [ ] 4.2 ルーティングの説明ドキュメントを作成
+- [x] 4.2 ルーティングの説明ドキュメントを作成
   - docs/02-routing.mdを作成
   - App Routerの仕組みと動的ルートを詳細に説明
   - _Requirements: 3.1, 3.2_
