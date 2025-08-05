@@ -1,583 +1,180 @@
-# 03. Next.jsコンポーネント設計
+# 03. コンポーネントとProps
 
-Next.jsでの再利用可能なコンポーネント設計は、効率的で保守性の高いアプリケーション開発の基盤となります。このドキュメントでは、TypeScriptを活用した型安全なコンポーネント設計から、実践的な実装パターンまで、包括的に解説します。
+このドキュメントでは、Next.jsでの**再利用可能なコンポーネント**の作成方法と、**Props**を使ったデータの受け渡しについて詳しく説明します。
 
-## 🎯 この章の学習目標
+## 📚 学習目標
 
-- 再利用可能なコンポーネントの設計原則を理解する
-- TypeScriptを使用した型安全なProps定義を習得する
-- バリアント対応とカスタマイズ可能なコンポーネントの作成方法を学ぶ
-- コンポーネント合成パターンの実装を理解する
-- イベントハンドリングとデータの受け渡し方法を習得する
-- Server ComponentsとClient Componentsの使い分けを学ぶ
+このセクションを完了すると、以下のことができるようになります：
 
-## 📖 コンポーネント設計の基本原則
+- Reactコンポーネントの基本構造を理解する
+- Propsを使ってコンポーネント間でデータを受け渡しする
+- TypeScriptを使った型安全なProps定義を作成する
+- 再利用可能なコンポーネントを設計・実装する
+- 複数のコンポーネントを組み合わせて複合コンポーネントを作成する
 
-### 1. 単一責任の原則（Single Responsibility Principle）
+## 🧩 コンポーネントとは
 
-各コンポーネントは一つの明確な責任を持つべきです。
+Reactコンポーネントは、UIの一部を表現する独立した、再利用可能なコードの単位です。コンポーネントを使うことで、複雑なUIを小さな部品に分割し、管理しやすくできます。
+
+### コンポーネントの基本構造
 
 ```typescript
-// ❌ 悪い例：複数の責任を持つコンポーネント
-function UserProfileWithNavigation({ user, navigationItems }) {
+// 基本的なコンポーネントの例
+export default function MyComponent() {
   return (
     <div>
-      <nav>{/* ナビゲーション */}</nav>
-      <div>{/* ユーザープロフィール */}</div>
-      <div>{/* 設定フォーム */}</div>
+      <h1>Hello, World!</h1>
     </div>
   )
 }
-
-// ✅ 良い例：責任を分離したコンポーネント
-function Navigation({ items }) { /* ナビゲーションの責任のみ */ }
-function UserProfile({ user }) { /* プロフィール表示の責任のみ */ }
-function SettingsForm({ onSave }) { /* 設定フォームの責任のみ */ }
 ```
 
-### 2. 開放閉鎖の原則（Open-Closed Principle）
-
-コンポーネントは拡張に対して開放的で、修正に対して閉鎖的であるべきです。
+### Propsを受け取るコンポーネント
 
 ```typescript
-// バリアントパターンで拡張性を確保
-interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
-  // 新しいバリアントを追加しやすい設計
-}
-```### 
-3. 依存関係逆転の原則（Dependency Inversion Principle）
-
-具体的な実装ではなく、抽象化に依存するべきです。
-
-```typescript
-// ❌ 悪い例：具体的な実装に依存
-function UserList() {
-  const [users, setUsers] = useState([])
-  
-  useEffect(() => {
-    // 具体的なAPI実装に依存
-    fetch('/api/users').then(res => res.json()).then(setUsers)
-  }, [])
-  
-  return <div>{/* ユーザーリスト */}</div>
+interface MyComponentProps {
+  title: string;
+  description?: string; // オプショナルなプロパティ
 }
 
-// ✅ 良い例：抽象化されたインターフェースに依存
-interface UserListProps {
-  users: User[]
-  onUserSelect?: (user: User) => void
-}
-
-function UserList({ users, onUserSelect }: UserListProps) {
-  // データの取得方法に依存しない
-  return <div>{/* ユーザーリスト */}</div>
-}
-```
-
-## 🔧 TypeScriptによる型安全なProps設計
-
-### 基本的なProps定義
-
-```typescript
-// 基本的なProps型定義
-interface BaseComponentProps {
-  className?: string
-  children?: React.ReactNode
-  id?: string
-  'data-testid'?: string
-}
-
-// 具体的なコンポーネントのProps
-interface ButtonProps extends BaseComponentProps {
-  variant?: 'primary' | 'secondary' | 'outline'
-  size?: 'sm' | 'md' | 'lg'
-  disabled?: boolean
-  loading?: boolean
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
-}
-```
-
-### Union Types とリテラル型の活用
-
-```typescript
-// バリアント型の定義
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-type ButtonSize = 'sm' | 'md' | 'lg'
-
-// 条件付き型の活用
-type ButtonProps<T extends 'button' | 'link' = 'button'> = {
-  variant?: ButtonVariant
-  size?: ButtonSize
-} & (T extends 'button' 
-  ? { onClick?: () => void } 
-  : { href: string; target?: string }
-)
-```
-
-### デフォルト値の設定
-
-```typescript
-export default function Button({
-  variant = 'primary',
-  size = 'md',
-  disabled = false,
-  loading = false,
-  className = '',
-  children,
-  ...props
-}: ButtonProps) {
-  // コンポーネント実装
-}
-```#
-# 🎨 バリアント対応コンポーネントの実装
-
-### スタイルバリアントの管理
-
-```typescript
-// スタイルマッピングオブジェクト
-const buttonVariants = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-  secondary: 'bg-gray-600 hover:bg-gray-700 text-white',
-  outline: 'bg-transparent hover:bg-gray-50 text-gray-700 border-gray-300',
-  ghost: 'bg-transparent hover:bg-gray-100 text-gray-700',
-  danger: 'bg-red-600 hover:bg-red-700 text-white',
-} as const
-
-const buttonSizes = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-base',
-  lg: 'px-6 py-3 text-lg',
-} as const
-
-// 動的クラス生成
-function Button({ variant = 'primary', size = 'md', className, ...props }) {
-  const classes = [
-    'inline-flex items-center justify-center font-medium rounded-md',
-    'transition-colors duration-200 focus:outline-none focus:ring-2',
-    buttonVariants[variant],
-    buttonSizes[size],
-    className,
-  ].filter(Boolean).join(' ')
-  
-  return <button className={classes} {...props} />
-}
-```
-
-### 条件付きレンダリング
-
-```typescript
-function Button({
-  loading = false,
-  disabled = false,
-  leftIcon,
-  rightIcon,
-  children,
-  ...props
-}) {
-  return (
-    <button disabled={disabled || loading} {...props}>
-      {/* ローディングスピナー */}
-      {loading && <LoadingSpinner />}
-      
-      {/* 左側アイコン */}
-      {leftIcon && !loading && (
-        <span className="mr-2">{leftIcon}</span>
-      )}
-      
-      {/* ボタンテキスト */}
-      {children}
-      
-      {/* 右側アイコン */}
-      {rightIcon && (
-        <span className="ml-2">{rightIcon}</span>
-      )}
-    </button>
-  )
-}
-```
-
-## 🧩 コンポーネント合成パターン
-
-### Children Propパターン
-
-```typescript
-// 基本的なchildren prop
-interface CardProps {
-  title?: string
-  children: React.ReactNode
-}
-
-function Card({ title, children }: CardProps) {
-  return (
-    <div className="card">
-      {title && <h3>{title}</h3>}
-      <div className="card-content">
-        {children}
-      </div>
-    </div>
-  )
-}
-
-// 使用例
-<Card title="ユーザー情報">
-  <p>名前: 田中太郎</p>
-  <p>メール: tanaka@example.com</p>
-  <Button>編集</Button>
-</Card>
-```### Render 
-Propパターン
-
-```typescript
-// Render propを使用した柔軟なコンポーネント
-interface DataFetcherProps<T> {
-  url: string
-  children: (data: T | null, loading: boolean, error: Error | null) => React.ReactNode
-}
-
-function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  
-  useEffect(() => {
-    fetch(url)
-      .then(res => res.json())
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false))
-  }, [url])
-  
-  return <>{children(data, loading, error)}</>
-}
-
-// 使用例
-<DataFetcher<User[]> url="/api/users">
-  {(users, loading, error) => {
-    if (loading) return <LoadingSpinner />
-    if (error) return <ErrorMessage error={error} />
-    return <UserList users={users} />
-  }}
-</DataFetcher>
-```
-
-### Compound Componentパターン
-
-```typescript
-// 複合コンポーネントの実装
-interface ModalContextType {
-  isOpen: boolean
-  onClose: () => void
-}
-
-const ModalContext = createContext<ModalContextType | null>(null)
-
-function Modal({ children, isOpen, onClose }: ModalProps) {
-  return (
-    <ModalContext.Provider value={{ isOpen, onClose }}>
-      {isOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            {children}
-          </div>
-        </div>
-      )}
-    </ModalContext.Provider>
-  )
-}
-
-function ModalHeader({ children }: { children: React.ReactNode }) {
-  const context = useContext(ModalContext)
-  return (
-    <div className="modal-header">
-      {children}
-      <button onClick={context?.onClose}>×</button>
-    </div>
-  )
-}
-
-function ModalBody({ children }: { children: React.ReactNode }) {
-  return <div className="modal-body">{children}</div>
-}
-
-function ModalFooter({ children }: { children: React.ReactNode }) {
-  return <div className="modal-footer">{children}</div>
-}
-
-// 複合コンポーネントとして export
-Modal.Header = ModalHeader
-Modal.Body = ModalBody
-Modal.Footer = ModalFooter
-
-// 使用例
-<Modal isOpen={isOpen} onClose={handleClose}>
-  <Modal.Header>
-    <h2>確認</h2>
-  </Modal.Header>
-  <Modal.Body>
-    <p>本当に削除しますか？</p>
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="outline" onClick={handleClose}>
-      キャンセル
-    </Button>
-    <Button variant="danger" onClick={handleDelete}>
-      削除
-    </Button>
-  </Modal.Footer>
-</Modal>
-```## 🔄 イ
-ベントハンドリングとデータの受け渡し
-
-### イベントハンドラーの型定義
-
-```typescript
-// 基本的なイベントハンドラー
-interface ButtonProps {
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void
-  onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void
-}
-
-// カスタムイベントハンドラー
-interface SearchInputProps {
-  onSearch?: (query: string) => void
-  onClear?: () => void
-  onChange?: (value: string) => void
-}
-
-function SearchInput({ onSearch, onClear, onChange }: SearchInputProps) {
-  const [value, setValue] = useState('')
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSearch?.(value)
-  }
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value
-    setValue(newValue)
-    onChange?.(newValue)
-  }
-  
-  const handleClear = () => {
-    setValue('')
-    onClear?.()
-  }
-  
-  return (
-    <form onSubmit={handleSubmit}>
-      <input value={value} onChange={handleChange} />
-      <button type="submit">検索</button>
-      <button type="button" onClick={handleClear}>クリア</button>
-    </form>
-  )
-}
-```
-
-### 状態の持ち上げ（Lifting State Up）
-
-```typescript
-// 親コンポーネントで状態を管理
-function UserManagement() {
-  const [users, setUsers] = useState<User[]>([])
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  
-  const handleUserSelect = (user: User) => {
-    setSelectedUser(user)
-  }
-  
-  const handleUserUpdate = (updatedUser: User) => {
-    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u))
-    setSelectedUser(updatedUser)
-  }
-  
+export default function MyComponent({ title, description }: MyComponentProps) {
   return (
     <div>
-      <UserList 
-        users={users} 
-        selectedUser={selectedUser}
-        onUserSelect={handleUserSelect} 
+      <h1>{title}</h1>
+      {description && <p>{description}</p>}
+    </div>
+  )
+}
+```
+
+## 🎯 Propsの基本概念
+
+Propsは「properties」の略で、親コンポーネントから子コンポーネントにデータを渡すためのメカニズムです。
+
+### Propsの特徴
+
+1. **読み取り専用**: 子コンポーネント内でPropsを変更することはできません
+2. **一方向データフロー**: 親から子への一方向にのみデータが流れます
+3. **型安全性**: TypeScriptを使用することで、Propsの型を定義できます
+
+### Propsの使用例
+
+```typescript
+// 親コンポーネント
+export default function ParentComponent() {
+  return (
+    <div>
+      <ChildComponent 
+        name="田中太郎" 
+        age={25} 
+        isActive={true}
       />
-      {selectedUser && (
-        <UserDetail 
-          user={selectedUser} 
-          onUserUpdate={handleUserUpdate} 
-        />
-      )}
     </div>
   )
 }
 
-// 子コンポーネントはイベントを通知するだけ
-function UserList({ users, selectedUser, onUserSelect }: UserListProps) {
-  return (
-    <ul>
-      {users.map(user => (
-        <li 
-          key={user.id}
-          className={selectedUser?.id === user.id ? 'selected' : ''}
-          onClick={() => onUserSelect(user)}
-        >
-          {user.name}
-        </li>
-      ))}
-    </ul>
-  )
+// 子コンポーネント
+interface ChildComponentProps {
+  name: string;
+  age: number;
+  isActive: boolean;
 }
-```##
- ⚡ Server ComponentsとClient Componentsの使い分け
 
-### Server Components（デフォルト）
-
-```typescript
-// Server Component - サーバーサイドで実行
-export default async function BlogPost({ params }: { params: { slug: string } }) {
-  // サーバーサイドでデータフェッチ
-  const post = await fetch(`https://api.example.com/posts/${params.slug}`)
-    .then(res => res.json())
-  
+function ChildComponent({ name, age, isActive }: ChildComponentProps) {
   return (
-    <article>
-      <h1>{post.title}</h1>
-      <p>{post.content}</p>
-      {/* Client Componentを含むことができる */}
-      <LikeButton postId={post.id} />
-    </article>
+    <div>
+      <h2>{name}</h2>
+      <p>年齢: {age}歳</p>
+      <p>ステータス: {isActive ? 'アクティブ' : '非アクティブ'}</p>
+    </div>
   )
 }
 ```
 
-### Client Components
-
-```typescript
-'use client'
-
-import { useState } from 'react'
-
-// Client Component - ブラウザで実行
-export default function LikeButton({ postId }: { postId: string }) {
-  const [liked, setLiked] = useState(false)
-  const [count, setCount] = useState(0)
-  
-  const handleLike = async () => {
-    setLiked(!liked)
-    // API呼び出し
-    const response = await fetch(`/api/posts/${postId}/like`, {
-      method: 'POST',
-    })
-    const data = await response.json()
-    setCount(data.likeCount)
-  }
-  
-  return (
-    <button onClick={handleLike} className={liked ? 'liked' : ''}>
-      ❤️ {count}
-    </button>
-  )
-}
-```
-
-### 使い分けの指針
-
-| 機能 | Server Component | Client Component |
-|------|------------------|------------------|
-| データフェッチング | ✅ 推奨 | ❌ 避ける |
-| インタラクション | ❌ 不可 | ✅ 必須 |
-| React Hooks | ❌ 使用不可 | ✅ 使用可能 |
-| ブラウザAPI | ❌ 使用不可 | ✅ 使用可能 |
-| SEO | ✅ 有利 | ❌ 不利 |
-| 初期ロード | ✅ 高速 | ❌ 遅い |
-| バンドルサイズ | ✅ 小さい | ❌ 大きい |
-
-## 🎯 実践的なコンポーネント設計例
+## 🔧 実践的なコンポーネント例
 
 ### 1. Buttonコンポーネント
 
+再利用可能なボタンコンポーネントの実装例：
+
 ```typescript
-import React from 'react'
-
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-type ButtonSize = 'sm' | 'md' | 'lg'
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant
-  size?: ButtonSize
-  loading?: boolean
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
-  fullWidth?: boolean
+interface ButtonProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline';
+  size?: 'small' | 'medium' | 'large';
+  disabled?: boolean;
+  onClick?: () => void;
+  type?: 'button' | 'submit' | 'reset';
+  className?: string;
 }
 
 export default function Button({
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  disabled = false,
-  leftIcon,
-  rightIcon,
-  fullWidth = false,
-  className = '',
   children,
-  ...props
+  variant = 'primary',
+  size = 'medium',
+  disabled = false,
+  onClick,
+  type = 'button',
+  className = '',
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2'
-  
-  const variantStyles = {
+  // バリアント（見た目の種類）に応じたスタイルクラス
+  const variantClasses = {
     primary: 'bg-blue-600 hover:bg-blue-700 text-white',
     secondary: 'bg-gray-600 hover:bg-gray-700 text-white',
-    outline: 'bg-transparent hover:bg-gray-50 text-gray-700 border border-gray-300',
-    ghost: 'bg-transparent hover:bg-gray-100 text-gray-700',
     danger: 'bg-red-600 hover:bg-red-700 text-white',
+    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent',
   }
-  
-  const sizeStyles = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+
+  // サイズに応じたスタイルクラス
+  const sizeClasses = {
+    small: 'px-3 py-1.5 text-sm',
+    medium: 'px-4 py-2 text-base',
+    large: 'px-6 py-3 text-lg',
   }
-  
-  const classes = [
-    baseStyles,
-    variantStyles[variant],
-    sizeStyles[size],
-    fullWidth && 'w-full',
-    (disabled || loading) && 'opacity-50 cursor-not-allowed',
+
+  // 全てのクラスを結合
+  const buttonClasses = [
+    'font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+    variantClasses[variant],
+    sizeClasses[size],
+    disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
     className,
-  ].filter(Boolean).join(' ')
-  
+  ].join(' ')
+
   return (
     <button
-      className={classes}
-      disabled={disabled || loading}
-      {...props}
+      type={type}
+      className={buttonClasses}
+      onClick={onClick}
+      disabled={disabled}
     >
-      {loading && <LoadingSpinner className="mr-2" />}
-      {leftIcon && !loading && <span className="mr-2">{leftIcon}</span>}
       {children}
-      {rightIcon && <span className="ml-2">{rightIcon}</span>}
     </button>
   )
 }
-```###
- 2. Cardコンポーネント
+```
+
+**使用例：**
+```typescript
+<Button variant="primary" size="large" onClick={handleClick}>
+  クリックしてください
+</Button>
+```
+
+### 2. Cardコンポーネント
+
+情報を整理して表示するカードコンポーネント：
 
 ```typescript
-import React from 'react'
-
 interface CardProps {
-  title?: string
-  description?: string
-  imageUrl?: string
-  imageAlt?: string
-  footer?: React.ReactNode
-  hoverable?: boolean
-  bordered?: boolean
-  shadow?: boolean
-  onClick?: () => void
-  className?: string
-  children?: React.ReactNode
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  children?: React.ReactNode;
+  className?: string;
+  clickable?: boolean;
+  onClick?: () => void;
 }
 
 export default function Card({
@@ -585,126 +182,334 @@ export default function Card({
   description,
   imageUrl,
   imageAlt,
-  footer,
-  hoverable = false,
-  bordered = true,
-  shadow = true,
-  onClick,
-  className = '',
   children,
+  className = '',
+  clickable = false,
+  onClick,
 }: CardProps) {
-  const baseStyles = 'bg-white rounded-lg overflow-hidden'
-  
-  const classes = [
-    baseStyles,
-    bordered && 'border border-gray-200',
-    shadow && 'shadow-md',
-    hoverable && 'hover:shadow-lg transition-shadow duration-200 cursor-pointer',
-    onClick && 'cursor-pointer',
-    className,
-  ].filter(Boolean).join(' ')
-  
-  return (
-    <div className={classes} onClick={onClick}>
+  const baseClasses = 'bg-white rounded-lg shadow-md overflow-hidden transition-shadow duration-200'
+  const clickableClasses = clickable
+    ? 'hover:shadow-lg cursor-pointer transform hover:scale-105 transition-transform duration-200'
+    : ''
+
+  const cardClasses = [baseClasses, clickableClasses, className].join(' ')
+
+  const CardContent = () => (
+    <>
       {imageUrl && (
-        <div className="aspect-w-16 aspect-h-9">
-          <img
+        <div className="relative h-48 w-full">
+          <Image
             src={imageUrl}
-            alt={imageAlt || title || ''}
-            className="w-full h-48 object-cover"
+            alt={imageAlt || title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
       )}
       
       <div className="p-6">
-        {title && (
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {title}
-          </h3>
-        )}
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          {title}
+        </h3>
         
         {description && (
-          <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+          <p className="text-gray-600 mb-4 leading-relaxed">
             {description}
           </p>
         )}
         
-        {children}
+        {children && (
+          <div className="mt-4">
+            {children}
+          </div>
+        )}
       </div>
-      
-      {footer && (
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-          {footer}
-        </div>
-      )}
+    </>
+  )
+
+  if (clickable && onClick) {
+    return (
+      <button className={cardClasses} onClick={onClick}>
+        <CardContent />
+      </button>
+    )
+  }
+
+  return (
+    <div className={cardClasses}>
+      <CardContent />
     </div>
   )
 }
 ```
 
-## 🧪 テスト可能なコンポーネント設計
+**使用例：**
+```typescript
+<Card 
+  title="記事のタイトル" 
+  description="記事の説明文"
+  imageUrl="/image.jpg"
+  clickable
+  onClick={handleCardClick}
+>
+  <p>追加のコンテンツ</p>
+</Card>
+```
 
-### テストフレンドリーなProps設計
+## 🏗️ 複合コンポーネントの作成
+
+複数のコンポーネントを組み合わせて、より複雑な機能を持つコンポーネントを作成できます。
+
+### BlogPostCardコンポーネントの例
 
 ```typescript
-interface ButtonProps {
-  // テスト用のdata属性
-  'data-testid'?: string
-  // アクセシビリティ属性
-  'aria-label'?: string
-  'aria-describedby'?: string
-  // テスト可能なイベントハンドラー
-  onClick?: (event: React.MouseEvent) => void
+interface BlogPostCardProps {
+  post: BlogPost;
+  onReadMore?: (postId: string) => void;
+  className?: string;
 }
 
-export default function Button({
-  'data-testid': testId,
-  'aria-label': ariaLabel,
-  onClick,
-  children,
-  ...props
-}: ButtonProps) {
+export default function BlogPostCard({
+  post,
+  onReadMore,
+  className = '',
+}: BlogPostCardProps) {
+  const handleReadMore = () => {
+    if (onReadMore) {
+      onReadMore(post.id)
+    }
+  }
+
   return (
-    <button
-      data-testid={testId}
-      aria-label={ariaLabel}
-      onClick={onClick}
-      {...props}
+    <Card
+      title={post.title}
+      description={post.excerpt}
+      imageUrl={post.imageUrl}
+      className={className}
     >
-      {children}
-    </button>
+      <div className="space-y-4">
+        {/* UserProfileコンポーネントを使用 */}
+        <UserProfile
+          user={post.author}
+          avatarSize="small"
+          showDetails={false}
+        />
+
+        {/* 公開日 */}
+        <div className="text-sm text-gray-500">
+          {formatDate(post.publishedAt)}
+        </div>
+
+        {/* タグ */}
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {post.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Buttonコンポーネントを使用 */}
+        <Button
+          variant="primary"
+          size="small"
+          onClick={handleReadMore}
+        >
+          続きを読む
+        </Button>
+      </div>
+    </Card>
   )
 }
 ```
 
-### テスト例
+## 📝 TypeScriptによる型安全性
+
+TypeScriptを使用することで、Propsの型安全性を確保できます。
+
+### 型定義のベストプラクティス
+
+1. **インターフェースの使用**
+```typescript
+interface ComponentProps {
+  // 必須のプロパティ
+  title: string;
+  // オプショナルなプロパティ
+  description?: string;
+  // ユニオン型を使った制限
+  variant?: 'primary' | 'secondary' | 'danger';
+  // 関数型のプロパティ
+  onClick?: (id: string) => void;
+  // React要素のプロパティ
+  children?: React.ReactNode;
+}
+```
+
+2. **デフォルト値の設定**
+```typescript
+export default function Component({
+  title,
+  description = '',
+  variant = 'primary',
+  onClick,
+  children,
+}: ComponentProps) {
+  // コンポーネントの実装
+}
+```
+
+3. **型の再利用**
+```typescript
+// 共通の型を定義
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'outline';
+export type ButtonSize = 'small' | 'medium' | 'large';
+
+// 複数のコンポーネントで使用
+interface ButtonProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+}
+
+interface IconButtonProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  icon: string;
+}
+```
+
+## 🎨 スタイリングのベストプラクティス
+
+### 1. 条件付きスタイリング
+
+```typescript
+const getButtonClasses = (variant: ButtonVariant, size: ButtonSize, disabled: boolean) => {
+  const baseClasses = 'font-medium rounded-lg transition-colors duration-200'
+  
+  const variantClasses = {
+    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+    secondary: 'bg-gray-600 hover:bg-gray-700 text-white',
+    danger: 'bg-red-600 hover:bg-red-700 text-white',
+    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white',
+  }
+  
+  const sizeClasses = {
+    small: 'px-3 py-1.5 text-sm',
+    medium: 'px-4 py-2 text-base',
+    large: 'px-6 py-3 text-lg',
+  }
+  
+  return [
+    baseClasses,
+    variantClasses[variant],
+    sizeClasses[size],
+    disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+  ].join(' ')
+}
+```
+
+### 2. カスタムクラスの受け入れ
+
+```typescript
+interface ComponentProps {
+  className?: string;
+}
+
+export default function Component({ className = '' }: ComponentProps) {
+  return (
+    <div className={`base-classes ${className}`}>
+      {/* コンテンツ */}
+    </div>
+  )
+}
+```
+
+## 🧪 コンポーネントのテスト
+
+コンポーネントをテストする際の基本的なアプローチ：
 
 ```typescript
 import { render, screen, fireEvent } from '@testing-library/react'
 import Button from './Button'
 
 describe('Button', () => {
-  it('renders with correct text', () => {
-    render(<Button>Click me</Button>)
-    expect(screen.getByText('Click me')).toBeInTheDocument()
+  test('正しくレンダリングされる', () => {
+    render(<Button>クリック</Button>)
+    expect(screen.getByRole('button')).toBeInTheDocument()
+    expect(screen.getByText('クリック')).toBeInTheDocument()
   })
-  
-  it('calls onClick when clicked', () => {
+
+  test('クリックイベントが正しく動作する', () => {
     const handleClick = jest.fn()
-    render(
-      <Button onClick={handleClick} data-testid="test-button">
-        Click me
-      </Button>
-    )
+    render(<Button onClick={handleClick}>クリック</Button>)
     
-    fireEvent.click(screen.getByTestId('test-button'))
+    fireEvent.click(screen.getByRole('button'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
-  
-  it('applies correct variant styles', () => {
-    render(<Button variant="danger">Delete</Button>)
-    const button = screen.getByText('Delete')
-    expect(button).toHaveClass('bg-red-600')
+
+  test('無効状態が正しく適用される', () => {
+    render(<Button disabled>クリック</Button>)
+    expect(screen.getByRole('button')).toBeDisabled()
   })
 })
 ```
+
+## 🚀 実践課題
+
+### 課題1: 基本的なコンポーネントの作成
+
+`Badge`コンポーネントを作成してください：
+
+```typescript
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: 'default' | 'success' | 'warning' | 'error';
+  size?: 'small' | 'medium' | 'large';
+}
+
+// 実装してください
+export default function Badge({ children, variant = 'default', size = 'medium' }: BadgeProps) {
+  // ここに実装
+}
+```
+
+### 課題2: 複合コンポーネントの作成
+
+`ProductCard`コンポーネントを作成してください：
+
+- 商品画像
+- 商品名
+- 価格
+- 評価（星）
+- 「カートに追加」ボタン
+
+### 課題3: フォームコンポーネントの作成
+
+`Input`コンポーネントを作成してください：
+
+- ラベル
+- プレースホルダー
+- エラーメッセージ
+- バリデーション状態の表示
+
+## 📖 参考資料
+
+- [React Components and Props](https://react.dev/learn/passing-props-to-a-component)
+- [TypeScript with React](https://react.dev/learn/typescript)
+- [Next.js Components](https://nextjs.org/docs/app/building-your-application/ui/components)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+
+## 🔗 関連する学習例
+
+- **前の例**: [02-pages-and-routing](../examples/02-pages-and-routing/) - ページとルーティング
+- **次の例**: [04-server-client-components](../examples/04-server-client-components/) - Server/Client Components
+- **実践例**: [03-components-and-props](../examples/03-components-and-props/) - このドキュメントの実装例
+
+---
+
+このドキュメントを通じて、再利用可能なコンポーネントの作成方法と、Propsを使った効果的なデータの受け渡しについて理解を深めてください。コンポーネント指向の開発は、保守性と再利用性の高いアプリケーションを構築するための重要な概念です。
