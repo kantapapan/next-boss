@@ -61,7 +61,7 @@
   - useEffectを使用したClient Componentでのデータフェッチング例を実装
   - _Requirements: 1.2, 2.2_
 
-- [ ] 7.2 データフェッチングの説明ドキュメントを作成
+- [x] 7.2 データフェッチングの説明ドキュメントを作成
   - docs/04-data-fetching.mdを作成
   - 各手法の使い分けと注意点を詳細に説明
   - _Requirements: 3.1, 3.2, 3.3_
