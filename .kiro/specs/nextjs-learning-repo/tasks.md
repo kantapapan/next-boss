@@ -56,7 +56,7 @@
   - _Requirements: 3.1, 3.2_
 
 - [ ] 7. データフェッチング例の作成
-- [ ] 7.1 05-data-fetchingディレクトリの実装
+- [x] 7.1 05-data-fetchingディレクトリの実装
   - fetch APIを使用したServer Componentでのデータフェッチング例を作成
   - useEffectを使用したClient Componentでのデータフェッチング例を実装
   - _Requirements: 1.2, 2.2_
