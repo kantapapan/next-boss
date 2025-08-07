@@ -11,9 +11,34 @@
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
+[![CI/CD Pipeline](https://github.com/kantapapan/next-boss/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/kantapapan/next-boss/actions/workflows/ci.yml)
+[![Deploy](https://github.com/kantapapan/next-boss/actions/workflows/deploy.yml/badge.svg?style=for-the-badge)](https://github.com/kantapapan/next-boss/actions/workflows/deploy.yml)
+[![Maintenance](https://github.com/kantapapan/next-boss/actions/workflows/weekly-maintenance.yml/badge.svg?style=for-the-badge)](https://github.com/kantapapan/next-boss/actions/workflows/weekly-maintenance.yml)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
+[![GitHub issues](https://img.shields.io/github/issues/kantapapan/next-boss?style=for-the-badge)](https://github.com/kantapapan/next-boss/issues)
+[![GitHub stars](https://img.shields.io/github/stars/kantapapan/next-boss?style=for-the-badge)](https://github.com/kantapapan/next-boss/stargazers)
+
+---
+
+### 📊 プロジェクト状況
+
 ![Progress](https://img.shields.io/badge/進捗-73%25_完了-brightgreen?style=for-the-badge)
 ![Examples](https://img.shields.io/badge/学習例-11_完成-orange?style=for-the-badge)
 ![Status](https://img.shields.io/badge/ステータス-アクティブ開発中-yellow?style=for-the-badge)
+
+---
+
+### 🔍 バッジの説明
+
+- **CI/CD Pipeline**: コード品質チェック、ビルドテスト、セキュリティスキャンの状況
+- **Deploy to GitHub Pages**: 学習ダッシュボードの自動デプロイ状況  
+- **Weekly Maintenance**: 依存関係更新、リンクチェック、統計レポートの定期実行状況
+- **License**: MITライセンスでオープンソース公開
+- **PRs Welcome**: プルリクエストによる貢献を歓迎
+- **Issues**: 現在のバグ報告・機能提案の数
+- **Stars**: GitHubでのスター数（プロジェクトの人気度）
 
 </div>
 
