@@ -88,13 +88,13 @@
   - バリデーションの実装方法を説明
   - _Requirements: 3.1, 3.2_
 
-- [ ] 10. API Routes例の作成
-- [ ] 10.1 08-api-routesディレクトリの実装
+- [x] 10. API Routes例の作成
+- [x] 10.1 08-api-routesディレクトリの実装
   - 基本的なAPI Routeを作成
   - データの取得・作成・更新・削除の例を実装
   - _Requirements: 1.2, 2.1_
 
-- [ ] 10.2 API Routesの説明を作成
+- [x] 10.2 API Routesの説明を作成
   - APIファイルに詳細なコメントを追加
   - RESTful APIの設計原則を説明
   - _Requirements: 3.1, 3.2_
