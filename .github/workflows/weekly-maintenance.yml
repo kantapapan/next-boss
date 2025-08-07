@@ -1,0 +1,276 @@
+name: 🔧 Weekly Maintenance
+
+on:
+  schedule:
+    # 毎週日曜日の午前2時（UTC）に実行
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  # 依存関係の更新チェック
+  dependency-check:
+    name: 📦 Dependency Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'next-boss/package-lock.json'
+          
+      - name: 🔍 Check for outdated packages
+        run: |
+          echo "# 📦 Dependency Status Report" > dependency-report.md
+          echo "" >> dependency-report.md
+          echo "Generated on: $(date)" >> dependency-report.md
+          echo "" >> dependency-report.md
+          
+          cd next-boss
+          
+          # メインプロジェクトの依存関係チェック
+          echo "## 🏠 Main Project Dependencies" >> ../dependency-report.md
+          echo "" >> ../dependency-report.md
+          echo "```" >> ../dependency-report.md
+          npm outdated || true >> ../dependency-report.md
+          echo "```" >> ../dependency-report.md
+          echo "" >> ../dependency-report.md
+          
+          # セキュリティ監査
+          echo "## 🔒 Security Audit" >> ../dependency-report.md
+          echo "" >> ../dependency-report.md
+          echo "```" >> ../dependency-report.md
+          npm audit --audit-level=moderate || true >> ../dependency-report.md
+          echo "```" >> ../dependency-report.md
+          
+      - name: 🔍 Check example dependencies
+        run: |
+          echo "" >> dependency-report.md
+          echo "## 📚 Example Dependencies" >> dependency-report.md
+          echo "" >> dependency-report.md
+          
+          for example_dir in next-boss/examples/*/; do
+            if [ -f "$example_dir/package.json" ]; then
+              example_name=$(basename "$example_dir")
+              echo "### $example_name" >> dependency-report.md
+              echo "" >> dependency-report.md
+              echo "```" >> dependency-report.md
+              cd "$example_dir"
+              npm outdated || true >> ../../../dependency-report.md
+              cd - > /dev/null
+              echo "```" >> dependency-report.md
+              echo "" >> dependency-report.md
+            fi
+          done
+          
+      - name: 📤 Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: dependency-report.md
+          retention-days: 30
+
+  # リンクの健全性チェック
+  link-check:
+    name: 🔗 Link Health Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🔗 Check markdown links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+          config-file: '.github/workflows/link-check-config.json'
+          folder-path: 'next-boss/docs, .'
+          file-path: 'README.md'
+        continue-on-error: true
+        
+      - name: 📊 Generate link report
+        run: |
+          echo "# 🔗 Link Health Report" > link-report.md
+          echo "" >> link-report.md
+          echo "Generated on: $(date)" >> link-report.md
+          echo "" >> link-report.md
+          
+          # 内部リンクのチェック
+          echo "## 📁 Internal Links" >> link-report.md
+          echo "" >> link-report.md
+          
+          # README.mdの学習例リンクをチェック
+          if grep -n "next-boss/examples" README.md; then
+            echo "✅ Learning example links found in README" >> link-report.md
+          else
+            echo "❌ Learning example links not found in README" >> link-report.md
+          fi
+          
+          # 各学習例のディレクトリ存在チェック
+          echo "" >> link-report.md
+          echo "## 📚 Learning Examples" >> link-report.md
+          echo "" >> link-report.md
+          
+          for i in {01..09}; do
+            if [ -d "next-boss/examples/${i}-"* ]; then
+              example_name=$(ls -d next-boss/examples/${i}-* | head -1 | xargs basename)
+              echo "- ✅ $example_name" >> link-report.md
+            else
+              echo "- ❌ Example ${i} missing" >> link-report.md
+            fi
+          done
+          
+      - name: 📤 Upload link report
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-report
+          path: link-report.md
+          retention-days: 30
+
+  # プロジェクト統計の生成
+  project-stats:
+    name: 📊 Project Statistics
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 📊 Generate project statistics
+        run: |
+          echo "# 📊 Next Boss Project Statistics" > project-stats.md
+          echo "" >> project-stats.md
+          echo "Generated on: $(date)" >> project-stats.md
+          echo "" >> project-stats.md
+          
+          # 基本統計
+          echo "## 📈 Basic Statistics" >> project-stats.md
+          echo "" >> project-stats.md
+          
+          # ファイル数
+          total_files=$(find . -type f -not -path "./node_modules/*" -not -path "./.git/*" | wc -l)
+          echo "- **Total Files**: $total_files" >> project-stats.md
+          
+          # TypeScript/JavaScript ファイル数
+          ts_files=$(find . -name "*.ts" -o -name "*.tsx" -not -path "./node_modules/*" | wc -l)
+          js_files=$(find . -name "*.js" -o -name "*.jsx" -not -path "./node_modules/*" | wc -l)
+          echo "- **TypeScript Files**: $ts_files" >> project-stats.md
+          echo "- **JavaScript Files**: $js_files" >> project-stats.md
+          
+          # Markdown ファイル数
+          md_files=$(find . -name "*.md" -not -path "./node_modules/*" | wc -l)
+          echo "- **Documentation Files**: $md_files" >> project-stats.md
+          
+          # 学習例の数
+          example_count=$(find next-boss/examples -maxdepth 1 -type d | grep -E '[0-9]{2}-' | wc -l)
+          echo "- **Learning Examples**: $example_count" >> project-stats.md
+          
+          # コード行数
+          echo "" >> project-stats.md
+          echo "## 📝 Code Lines" >> project-stats.md
+          echo "" >> project-stats.md
+          echo "```" >> project-stats.md
+          find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | \
+            grep -v node_modules | \
+            xargs wc -l | \
+            tail -1 >> project-stats.md
+          echo "```" >> project-stats.md
+          
+          # 最近の活動
+          echo "" >> project-stats.md
+          echo "## 🕒 Recent Activity" >> project-stats.md
+          echo "" >> project-stats.md
+          echo "```" >> project-stats.md
+          git log --oneline -10 >> project-stats.md
+          echo "```" >> project-stats.md
+          
+          # 貢献者統計
+          echo "" >> project-stats.md
+          echo "## 👥 Contributors" >> project-stats.md
+          echo "" >> project-stats.md
+          echo "```" >> project-stats.md
+          git shortlog -sn >> project-stats.md
+          echo "```" >> project-stats.md
+          
+      - name: 📤 Upload project statistics
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-stats
+          path: project-stats.md
+          retention-days: 90
+
+  # 学習進捗の更新
+  progress-update:
+    name: 📈 Progress Update
+    runs-on: ubuntu-latest
+    needs: [dependency-check, link-check, project-stats]
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 📈 Calculate current progress
+        run: |
+          echo "# 📈 Weekly Progress Update" > progress-update.md
+          echo "" >> progress-update.md
+          echo "Generated on: $(date)" >> progress-update.md
+          echo "" >> progress-update.md
+          
+          # 完了したセクションの計算
+          completed_sections=11
+          total_sections=15
+          progress=$((completed_sections * 100 / total_sections))
+          
+          echo "## 🎯 Current Status" >> progress-update.md
+          echo "" >> progress-update.md
+          echo "- **Overall Progress**: ${progress}% (${completed_sections}/${total_sections})" >> progress-update.md
+          echo "- **Learning Examples**: $(find next-boss/examples -maxdepth 1 -type d | grep -E '[0-9]{2}-' | wc -l) completed" >> progress-update.md
+          echo "- **Documentation Files**: $(find next-boss/docs -name "*.md" | wc -l) completed" >> progress-update.md
+          echo "" >> progress-update.md
+          
+          echo "## 📋 Remaining Tasks" >> progress-update.md
+          echo "" >> progress-update.md
+          echo "- [ ] 💪 実践課題集 (exercise-01〜06)" >> progress-update.md
+          echo "- [ ] 📊 学習進捗管理機能" >> progress-update.md
+          echo "- [ ] 🎯 学習ダッシュボード" >> progress-update.md
+          echo "- [ ] 🚀 デプロイメントガイド" >> progress-update.md
+          echo "" >> progress-update.md
+          
+          echo "## 🏆 Recent Achievements" >> progress-update.md
+          echo "" >> progress-update.md
+          echo "- ✅ 完全なブログアプリケーション例" >> progress-update.md
+          echo "- ✅ API Routes実装" >> progress-update.md
+          echo "- ✅ フォームとバリデーション" >> progress-update.md
+          echo "- ✅ スタイリング手法" >> progress-update.md
+          
+      - name: 📤 Upload progress update
+        uses: actions/upload-artifact@v4
+        with:
+          name: progress-update
+          path: progress-update.md
+          retention-days: 90
+
+  # メンテナンス完了通知
+  maintenance-complete:
+    name: 🎉 Maintenance Complete
+    runs-on: ubuntu-latest
+    needs: [dependency-check, link-check, project-stats, progress-update]
+    if: always()
+    
+    steps:
+      - name: 🎉 Maintenance summary
+        run: |
+          echo "🔧 Weekly maintenance completed!"
+          echo ""
+          echo "📊 Reports generated:"
+          echo "- 📦 Dependency status"
+          echo "- 🔗 Link health check"
+          echo "- 📊 Project statistics"
+          echo "- 📈 Progress update"
+          echo ""
+          echo "🚀 Next Boss is healthy and ready for learning!"

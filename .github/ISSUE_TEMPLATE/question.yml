@@ -1,0 +1,138 @@
+name: ❓ Question
+description: 学習に関する質問をする
+title: "[Question] "
+labels: ["question", "help-wanted"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❓ 学習に関する質問
+        
+        Next Bossでの学習についてご質問をありがとうございます！
+        コミュニティで知識を共有し、一緒に学習を進めましょう。
+
+  - type: dropdown
+    id: example
+    attributes:
+      label: 📚 関連する学習例
+      description: 質問に関連する学習例を選択してください
+      options:
+        - "01-basic-setup"
+        - "02-pages-and-routing"
+        - "03-components-and-props"
+        - "04-server-client-components"
+        - "05-data-fetching"
+        - "06-styling-methods"
+        - "07-forms-and-validation"
+        - "08-api-routes"
+        - "09-full-app-example"
+        - "全般的な質問"
+        - "その他"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: level
+    attributes:
+      label: 📈 学習レベル
+      description: あなたの現在の学習レベルを教えてください
+      options:
+        - "初心者（プログラミング経験が少ない）"
+        - "初級者（基本的なHTML/CSS/JSは理解している）"
+        - "中級者（Reactの基本は理解している）"
+        - "上級者（Next.jsの経験がある）"
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ 質問内容
+      description: 具体的な質問を記載してください
+      placeholder: |
+        例：
+        - ○○の概念がよく理解できません
+        - ○○を実装する際に△△のエラーが発生します
+        - ○○と△△の違いがわかりません
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 📝 背景・状況
+      description: 質問の背景や現在の状況を教えてください
+      placeholder: |
+        例：
+        - どの部分まで進んでいるか
+        - 何を実現しようとしているか
+        - どこでつまずいているか
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 🔍 試したこと
+      description: 問題解決のために試したことがあれば教えてください
+      placeholder: |
+        例：
+        - 公式ドキュメントを確認した
+        - Google検索で調べた
+        - コードを○○のように変更してみた
+
+  - type: textarea
+    id: code
+    attributes:
+      label: 💻 関連するコード
+      description: 質問に関連するコードがあれば貼り付けてください
+      render: typescript
+
+  - type: textarea
+    id: error
+    attributes:
+      label: ❌ エラーメッセージ
+      description: エラーが発生している場合、エラーメッセージを貼り付けてください
+      render: shell
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 🎯 期待する結果
+      description: どのような結果を期待していますか？
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ 環境情報
+      description: 使用している環境について教えてください
+      placeholder: |
+        - OS: [例: macOS 13.0, Windows 11, Ubuntu 22.04]
+        - Node.js: [例: 18.17.0]
+        - npm: [例: 9.6.7]
+        - ブラウザ: [例: Chrome 115, Firefox 116, Safari 16]
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ チェックリスト
+      description: 以下の項目を確認してください
+      options:
+        - label: 既存のIssueやDiscussionsで同じ質問がされていないことを確認しました
+          required: true
+        - label: 関連するドキュメントを読みました
+          required: true
+        - label: 質問内容を明確に記載しました
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 💡 ヒント
+        
+        - **具体的に**: 「動かない」ではなく「○○のエラーが発生する」
+        - **コードを共有**: 問題のあるコードを貼り付けてください
+        - **環境情報**: OS、Node.jsバージョンなどを記載してください
+        - **試したこと**: 解決のために試したことを教えてください
+        
+        コミュニティの皆さんが回答しやすくなります！
