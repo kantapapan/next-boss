@@ -1,0 +1,235 @@
+name: 🔍 Pull Request Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  # PR情報の分析
+  pr-analysis:
+    name: 📋 PR Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: 📊 Analyze changes
+        run: |
+          echo "# 🔍 Pull Request Analysis" >> pr-analysis.md
+          echo "" >> pr-analysis.md
+          echo "**PR Title**: ${{ github.event.pull_request.title }}" >> pr-analysis.md
+          echo "**Author**: @${{ github.event.pull_request.user.login }}" >> pr-analysis.md
+          echo "**Branch**: ${{ github.head_ref }}" >> pr-analysis.md
+          echo "" >> pr-analysis.md
+          
+          # 変更されたファイルの分析
+          echo "## 📁 Changed Files" >> pr-analysis.md
+          echo "" >> pr-analysis.md
+          
+          # 学習例の変更をチェック
+          if git diff --name-only origin/main...HEAD | grep -q "examples/"; then
+            echo "📚 **Learning Examples Modified**" >> pr-analysis.md
+            git diff --name-only origin/main...HEAD | grep "examples/" | sed 's/^/- /' >> pr-analysis.md
+            echo "" >> pr-analysis.md
+          fi
+          
+          # ドキュメントの変更をチェック
+          if git diff --name-only origin/main...HEAD | grep -q "docs/\|README.md"; then
+            echo "📖 **Documentation Modified**" >> pr-analysis.md
+            git diff --name-only origin/main...HEAD | grep -E "docs/|README.md" | sed 's/^/- /' >> pr-analysis.md
+            echo "" >> pr-analysis.md
+          fi
+          
+          # GitHub Actionsの変更をチェック
+          if git diff --name-only origin/main...HEAD | grep -q ".github/workflows/"; then
+            echo "⚙️ **GitHub Actions Modified**" >> pr-analysis.md
+            git diff --name-only origin/main...HEAD | grep ".github/workflows/" | sed 's/^/- /' >> pr-analysis.md
+            echo "" >> pr-analysis.md
+          fi
+          
+          # 変更統計
+          echo "## 📈 Change Statistics" >> pr-analysis.md
+          echo "" >> pr-analysis.md
+          echo "```" >> pr-analysis.md
+          git diff --stat origin/main...HEAD >> pr-analysis.md
+          echo "```" >> pr-analysis.md
+          
+      - name: 📤 Upload analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-analysis
+          path: pr-analysis.md
+
+  # 学習例の整合性チェック
+  example-consistency:
+    name: 🧪 Example Consistency Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Check example structure
+        run: |
+          echo "🔍 Checking example directory structure..."
+          
+          # 各学習例の必要ファイルをチェック
+          for example_dir in next-boss/examples/*/; do
+            if [ -d "$example_dir" ]; then
+              example_name=$(basename "$example_dir")
+              echo "Checking $example_name..."
+              
+              # package.jsonの存在チェック
+              if [ -f "$example_dir/package.json" ]; then
+                echo "  ✅ package.json exists"
+              else
+                echo "  ⚠️ package.json missing"
+              fi
+              
+              # READMEの存在チェック
+              if [ -f "$example_dir/README.md" ]; then
+                echo "  ✅ README.md exists"
+              else
+                echo "  ⚠️ README.md missing"
+              fi
+              
+              # Next.js設定ファイルのチェック
+              if [ -f "$example_dir/next.config.ts" ] || [ -f "$example_dir/next.config.js" ]; then
+                echo "  ✅ Next.js config exists"
+              else
+                echo "  ⚠️ Next.js config missing"
+              fi
+              
+              # TypeScript設定のチェック
+              if [ -f "$example_dir/tsconfig.json" ]; then
+                echo "  ✅ TypeScript config exists"
+              else
+                echo "  ⚠️ TypeScript config missing"
+              fi
+              
+              echo ""
+            fi
+          done
+
+  # セキュリティチェック（PR専用）
+  security-check:
+    name: 🔒 Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Check for sensitive information
+        run: |
+          echo "🔍 Scanning for sensitive information..."
+          
+          # APIキーやシークレットの検索
+          if grep -r -i -E "(api[_-]?key|secret|password|token)" --include="*.ts" --include="*.js" --include="*.json" . | grep -v "example\|sample\|test\|docs"; then
+            echo "⚠️ Potential sensitive information found!"
+            echo "Please review the above matches."
+          else
+            echo "✅ No sensitive information detected"
+          fi
+          
+          # .envファイルの検索
+          if find . -name ".env*" -not -path "./node_modules/*" -not -name ".env.example" -not -name ".env.local.example"; then
+            echo "⚠️ Environment files found!"
+            echo "Make sure they are properly gitignored."
+          else
+            echo "✅ No environment files found"
+          fi
+          
+          # ハードコードされたURLの検索
+          if grep -r -E "https?://[^/]*\.(com|org|net|io)" --include="*.ts" --include="*.js" . | grep -v "example\|placeholder\|docs\|README" | head -5; then
+            echo "⚠️ Hardcoded URLs found - please review"
+          else
+            echo "✅ No suspicious hardcoded URLs found"
+          fi
+
+  # コードレビュー支援
+  code-review-helper:
+    name: 👀 Code Review Helper
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: 🔍 Generate review checklist
+        run: |
+          echo "# 👀 Code Review Checklist" > review-checklist.md
+          echo "" >> review-checklist.md
+          echo "## 📋 General Checks" >> review-checklist.md
+          echo "" >> review-checklist.md
+          echo "- [ ] Code follows TypeScript best practices" >> review-checklist.md
+          echo "- [ ] No console.log statements in production code" >> review-checklist.md
+          echo "- [ ] Error handling is implemented properly" >> review-checklist.md
+          echo "- [ ] Comments are clear and helpful" >> review-checklist.md
+          echo "- [ ] No hardcoded values (use constants/config)" >> review-checklist.md
+          echo "" >> review-checklist.md
+          
+          # Next.js特有のチェック
+          if git diff --name-only origin/main...HEAD | grep -E "\.(tsx?|jsx?)$"; then
+            echo "## ⚛️ Next.js/React Checks" >> review-checklist.md
+            echo "" >> review-checklist.md
+            echo "- [ ] Components are properly typed" >> review-checklist.md
+            echo "- [ ] Server/Client Components are used appropriately" >> review-checklist.md
+            echo "- [ ] No useEffect in Server Components" >> review-checklist.md
+            echo "- [ ] Proper error boundaries are implemented" >> review-checklist.md
+            echo "- [ ] Accessibility attributes are included" >> review-checklist.md
+            echo "" >> review-checklist.md
+          fi
+          
+          # ドキュメント変更のチェック
+          if git diff --name-only origin/main...HEAD | grep -E "\.md$"; then
+            echo "## 📖 Documentation Checks" >> review-checklist.md
+            echo "" >> review-checklist.md
+            echo "- [ ] Links are working correctly" >> review-checklist.md
+            echo "- [ ] Code examples are accurate" >> review-checklist.md
+            echo "- [ ] Japanese text is natural and clear" >> review-checklist.md
+            echo "- [ ] Screenshots/diagrams are up to date" >> review-checklist.md
+            echo "" >> review-checklist.md
+          fi
+          
+          echo "## 🎯 Learning Content Checks" >> review-checklist.md
+          echo "" >> review-checklist.md
+          echo "- [ ] Examples are beginner-friendly" >> review-checklist.md
+          echo "- [ ] Step-by-step instructions are clear" >> review-checklist.md
+          echo "- [ ] Code is well-commented for learning" >> review-checklist.md
+          echo "- [ ] Difficulty progression is appropriate" >> review-checklist.md
+          
+      - name: 📤 Upload review checklist
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-checklist
+          path: review-checklist.md
+
+  # PR成功時のメッセージ
+  pr-success:
+    name: 🎉 PR Checks Complete
+    runs-on: ubuntu-latest
+    needs: [pr-analysis, example-consistency, security-check, code-review-helper]
+    if: success()
+    
+    steps:
+      - name: 🎉 Success message
+        run: |
+          echo "🎉 All PR checks completed successfully!"
+          echo ""
+          echo "✅ PR Analysis: PASSED"
+          echo "✅ Example Consistency: PASSED"
+          echo "✅ Security Check: PASSED"
+          echo "✅ Code Review Helper: READY"
+          echo ""
+          echo "🚀 This PR is ready for human review!"

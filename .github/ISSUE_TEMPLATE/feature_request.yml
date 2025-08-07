@@ -1,0 +1,140 @@
+name: ✨ Feature Request
+description: 新機能や改善を提案する
+title: "[Feature] "
+labels: ["enhancement", "needs-discussion"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ✨ 機能リクエスト
+        
+        新機能や改善のご提案をありがとうございます！
+        Next Bossをより良い学習リソースにするため、詳細を教えてください。
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 📂 カテゴリ
+      description: 提案する機能のカテゴリを選択してください
+      options:
+        - "新しい学習例"
+        - "既存例の改善"
+        - "ドキュメント改善"
+        - "開発体験の向上"
+        - "テスト・品質向上"
+        - "パフォーマンス改善"
+        - "アクセシビリティ"
+        - "その他"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 解決したい問題
+      description: この機能によってどのような問題を解決したいですか？
+      placeholder: |
+        例：
+        - 初心者が○○を理解するのが難しい
+        - ○○の学習例が不足している
+        - ○○の説明がわかりにくい
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 提案する解決策
+      description: どのような機能や改善を提案しますか？
+      placeholder: |
+        例：
+        - ○○の学習例を追加する
+        - ○○の説明をより詳しくする
+        - ○○のインタラクティブなデモを作成する
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: 🎯 期待される効果
+      description: この機能によってどのような効果が期待できますか？
+      placeholder: |
+        例：
+        - 初心者の理解度が向上する
+        - 学習時間が短縮される
+        - より実践的なスキルが身につく
+    validations:
+      required: true
+
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: 📊 想定される難易度
+      description: この機能の実装難易度はどの程度だと思いますか？
+      options:
+        - "簡単（数時間）"
+        - "普通（1-2日）"
+        - "難しい（1週間）"
+        - "とても難しい（それ以上）"
+        - "わからない"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⭐ 優先度
+      description: この機能の優先度はどの程度だと思いますか？
+      options:
+        - "高（すぐに必要）"
+        - "中（あると良い）"
+        - "低（将来的に）"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 代替案
+      description: 他に考えられる解決方法はありますか？
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: 📚 参考例
+      description: 参考になるサイトやリソースがあれば教えてください
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🛠️ 実装のアイデア
+      description: 実装方法についてアイデアがあれば教えてください
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: 🤝 貢献について
+      description: この機能の実装について
+      options:
+        - label: この機能の実装に協力したいです
+          required: false
+        - label: テストやレビューで協力したいです
+          required: false
+        - label: ドキュメント作成で協力したいです
+          required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ チェックリスト
+      description: 以下の項目を確認してください
+      options:
+        - label: 既存のIssueで同じ提案がされていないことを確認しました
+          required: true
+        - label: この機能がNext Bossの学習目標に合致することを確認しました
+          required: true
+        - label: 提案内容を明確に記載しました
+          required: true
