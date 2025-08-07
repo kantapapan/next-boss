@@ -11,11 +11,36 @@
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
+[![CI/CD Pipeline](https://github.com/kantapapan/next-boss/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/kantapapan/next-boss/actions/workflows/ci.yml)
+[![Deploy](https://github.com/kantapapan/next-boss/actions/workflows/deploy.yml/badge.svg?style=for-the-badge)](https://github.com/kantapapan/next-boss/actions/workflows/deploy.yml)
+[![Maintenance](https://github.com/kantapapan/next-boss/actions/workflows/weekly-maintenance.yml/badge.svg?style=for-the-badge)](https://github.com/kantapapan/next-boss/actions/workflows/weekly-maintenance.yml)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
+[![GitHub issues](https://img.shields.io/github/issues/kantapapan/next-boss?style=for-the-badge)](https://github.com/kantapapan/next-boss/issues)
+[![GitHub stars](https://img.shields.io/github/stars/kantapapan/next-boss?style=for-the-badge)](https://github.com/kantapapan/next-boss/stargazers)
+
+---
+
+### 📊 プロジェクト状況
+
 ![Progress](https://img.shields.io/badge/進捗-73%25_完了-brightgreen?style=for-the-badge)
 ![Examples](https://img.shields.io/badge/学習例-11_完成-orange?style=for-the-badge)
 ![Status](https://img.shields.io/badge/ステータス-アクティブ開発中-yellow?style=for-the-badge)
 
 </div>
+
+---
+
+### 🔍 バッジの説明
+
+- **CI/CD Pipeline**: コード品質チェック、ビルドテスト、セキュリティスキャンの状況
+- **Deploy to GitHub Pages**: 学習ダッシュボードの自動デプロイ状況  
+- **Weekly Maintenance**: 依存関係更新、リンクチェック、統計レポートの定期実行状況
+- **License**: MITライセンスでオープンソース公開
+- **PRs Welcome**: プルリクエストによる貢献を歓迎
+- **Issues**: 現在のバグ報告・機能提案の数
+- **Stars**: GitHubでのスター数（プロジェクトの人気度）
 
 ---
 
@@ -253,6 +278,33 @@ export const postStore = {
 
 総合進捗: ████████████████░░░░ 73% (11/15)
 ```
+
+---
+
+## ⚙️ 自動化とCI/CD
+
+Next Bossは包括的なGitHub Actionsワークフローで品質を保証しています：
+
+### 🔄 継続的インテグレーション
+- **コード品質チェック**: ESLint、TypeScript、Prettier
+- **並列ビルドテスト**: 全11の学習例を効率的にテスト
+- **セキュリティスキャン**: npm audit、CodeQL Analysis
+- **ドキュメント整合性**: リンク切れや構造問題の自動検出
+
+### 🚀 自動デプロイメント
+- **GitHub Pages**: メインブランチへのプッシュで自動デプロイ
+- **健全性チェック**: デプロイ後の動作確認
+- **静的サイト生成**: 最適化されたビルド
+
+### 🔧 定期メンテナンス
+- **依存関係チェック**: 週次での更新確認
+- **リンク健全性**: ドキュメント内リンクの定期チェック
+- **プロジェクト統計**: 進捗レポートの自動生成
+
+### 🤝 貢献支援
+- **PR分析**: 変更内容の自動分析とレポート
+- **コードレビュー支援**: 自動生成されるチェックリスト
+- **Issue管理**: 構造化されたテンプレートとラベル
 
 ---
 
